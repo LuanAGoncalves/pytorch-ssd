@@ -1,0 +1,26 @@
+<annotation>
+  <folder>input</folder>
+  <filename>2020-03-18-12-00-00.scene_0004frame-27.jpg</filename>
+  <path>/home/luan/workspace/pytorch-ssd/dataset/JPEGImages/2020-03-18-12-00-00.scene_0004frame-27.jpg</path>
+  <source>
+    <database>Unknown</database>
+  </source>
+  <size>
+    <width>117</width>
+    <height>127</height>
+    <depth>3</depth>
+  </size>
+  <segmented>0</segmented>
+  <object>
+    <name>plate</name>
+    <pose>Unspecified</pose>
+    <truncated>0</truncated>
+    <difficult>0</difficult>
+    <bndbox>
+      <xmin>45</xmin>
+      <ymin>102</ymin>
+      <xmax>70</xmax>
+      <ymax>111</ymax>
+    </bndbox>
+  </object>
+</annotation>

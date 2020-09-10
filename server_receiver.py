@@ -5,6 +5,7 @@ from vision.ssd.config import vgg_ssd_config as config
 import socket
 import sys
 import json
+import torch
 
 print("# Preparing the server model.")
 

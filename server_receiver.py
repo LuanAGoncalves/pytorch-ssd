@@ -49,6 +49,8 @@ print("# Listen for incoming connections.")
 sock.listen(1)
 
 filename = "data.json"
+BUFFER_SIZE = 4096
+
 
 while True:
     # Wait for a connection
@@ -56,9 +58,9 @@ while True:
 
     try:
         while True:
-            with open(filename, "wb") as f
+            with open(filename, "wb") as f:
                 while True:
-                    bytes_read = connection.recv(16)
+                    bytes_read = connection.recv(BUFFER_SIZE)
                     if not bytes_read:
                         # nothing is received
                         # file transmitting is done

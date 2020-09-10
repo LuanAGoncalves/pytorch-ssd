@@ -52,6 +52,7 @@ output = predictor_m1.predict(image)
 output = output.cpu().numpy().tolist()
 
 filename = "data.json"
+BUFFER_SIZE = 4096
 
 with open(filename, "w") as outfile:
     json.dump({"scores": output, "height":height, "width":width}, outfile)
@@ -66,10 +67,20 @@ try:
     # print >>sys.stderr, 'sending "%s"' % message
     # sock.sendall(message)
 
-    with open(filename, "rb") as f:
-        bytes_read = f.read()
-        sock.sendall(bytes_read)
+    # with open(filename, "rb") as f:
+    #     bytes_read = f.read()
+    #     sock.sendall(bytes_read)
 
+    with open(filename, "rb") as f:
+        while True:
+            # read the bytes from the file
+            bytes_read = f.read(BUFFER_SIZE)
+            if not bytes_read:
+                # file transmitting is done
+                break
+            # we use sendall to assure transimission in
+            # busy networks
+            sock.sendall(bytes_read)
     # # Look for the response
     # amount_received = 0
     # amount_expected = len(message)

@@ -56,15 +56,24 @@ while True:
 
     try:
         while True:
-            data = connection.recv(16)
-            if data:
-                with open(filename) as json_file:
-                    input_batch = torch.tensor(json.load(json_file)["scores"])
-                    height = torch.tensor(json.load(json_file)["height"])
-                    width = torch.tensor(json.load(json_file)["width"])
-                input_batch = input_batch.cuda()
-                boxes, labels, probs = predictor_m2.predict(input_batch, height, width, 30, 0.4)
-                connection.sendall(data)
+            with open(filename, "wb") as f
+                while True:
+                    bytes_read = connection.recv(16)
+                    if not bytes_read:
+                        # nothing is received
+                        # file transmitting is done
+                        break
+                    # write to the file the bytes we just received
+                    f.write(bytes_read)
+            # data = connection.recv(16)
+            # if data:
+            with open(filename) as json_file:
+                input_batch = torch.tensor(json.load(json_file)["scores"])
+                height = torch.tensor(json.load(json_file)["height"])
+                width = torch.tensor(json.load(json_file)["width"])
+            input_batch = input_batch.cuda()
+            boxes, labels, probs = predictor_m2.predict(input_batch, height, width, 30, 0.4)
+            connection.sendall(data)
             
     finally:
         # Clean up the connection

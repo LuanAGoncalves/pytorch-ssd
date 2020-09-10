@@ -47,6 +47,8 @@ print("# Listen for incoming connections.")
 # Listen for incoming connections
 sock.listen(1)
 
+filename = "data.json"
+
 while True:
     # Wait for a connection
     connection, client_address = sock.accept()

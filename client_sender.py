@@ -7,7 +7,7 @@ import sys
 import cv2
 import json
 
-print("# Preparing the server model.")
+print("# Preparing the client model.")
 
 model_path = "./models/ufpark-model.pth"
 split = 0   # Split point int the first maxpooling layer.
@@ -31,7 +31,7 @@ predictor_m1 = PredictorM1(
     )
 print("# Done!")
 
-print("# Preparing server socket.")
+print("# Preparing client socket.")
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -44,7 +44,7 @@ print("# Done!")
 
 print("# Start processing!")
 
-orig_image = cv2.imread('../samurai/dataset/JPEGImages/afternoon_1_scene_0015001.jpg')
+orig_image = cv2.imread('../dataset/JPEGImages/afternoon_1_scene_0015001.jpg')
 image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)
 height, width, _ = image.shape
 output = predictor_m1.predict(image)
@@ -67,7 +67,8 @@ try:
     # sock.sendall(message)
 
     with open(filename, "rb") as f:
-        socket.sendall(bytes_read)
+        bytes_read = f.read()
+        sock.sendall(bytes_read)
 
     # # Look for the response
     # amount_received = 0

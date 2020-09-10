@@ -69,10 +69,8 @@ while True:
         # data = connection.recv(16)
         # if data:
         with open(filename) as json_file:
-            input_batch = torch.tensor(json.load(json_file)["scores"])
-            height = torch.tensor(json.load(json_file)["height"])
-            width = torch.tensor(json.load(json_file)["width"])
-        input_batch = input_batch.cuda()
+            input_batch, height, width = torch.tensor(json.load(json_file).values())
+        input_batch = torch.tensor(input_batch).cuda()
         boxes, labels, probs = predictor_m2.predict(input_batch, height, width, 30, 0.4)
         connection.sendall(data)
             

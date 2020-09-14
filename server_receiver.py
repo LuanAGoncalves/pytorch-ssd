@@ -61,13 +61,10 @@ while True:
             while True:
                 bytes_read = connection.recv(BUFFER_SIZE)
                 if not bytes_read:
-                    # nothing is received
-                    # file transmitting is done
                     break
                 # write to the file the bytes we just received
                 f.write(bytes_read)
-        # data = connection.recv(16)
-        # if data:
+                
         with open(filename) as json_file:
             input_batch, height, width = json.load(json_file).values()
         input_batch = torch.tensor(input_batch).cuda()
@@ -75,4 +72,7 @@ while True:
         print(boxes.shape, labels.shape, probs.shape) 
     finally:
         # Clean up the connection
+        print('# Closing socket')
         connection.close()
+        print("# Done!")
+        break

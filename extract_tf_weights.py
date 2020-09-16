@@ -8,18 +8,18 @@ import pickle
 def read_weights(frozen_model):
     weights = {}
     with tf.Session() as sess:
-        with gfile.FastGFile(frozen_model, 'rb') as f:
+        with gfile.FastGFile(frozen_model, "rb") as f:
             graph_def = tf.GraphDef()
             graph_def.ParseFromString(f.read())
             tf.import_graph_def(graph_def)
         for n in graph_def.node:
-            if n.op == 'Const':
-                weights[n.name] = tensor_util.MakeNdarray(n.attr['value'].tensor)
+            if n.op == "Const":
+                weights[n.name] = tensor_util.MakeNdarray(n.attr["value"].tensor)
                 print("Name:", n.name, "Shape:", weights[n.name].shape)
     return weights
 
 
-if len(sys.argv)  < 3:
+if len(sys.argv) < 3:
     print("Usage: python extract_tf_weights.py <frozen_model.pb> <weights_file.pickle>")
 
 frozen_model = sys.argv[1]

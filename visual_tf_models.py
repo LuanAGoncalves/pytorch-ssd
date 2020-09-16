@@ -9,11 +9,11 @@ if len(sys.argv) < 2:
 
 model_file_name = sys.argv[1]
 with tf.Session() as sess:
-    with gfile.FastGFile(model_file_name, 'rb') as f:
+    with gfile.FastGFile(model_file_name, "rb") as f:
         graph_def = tf.GraphDef()
         graph_def.ParseFromString(f.read())
         g_in = tf.import_graph_def(graph_def)
-LOGDIR='log'
+LOGDIR = "log"
 train_writer = tf.summary.FileWriter(LOGDIR)
 train_writer.add_graph(sess.graph)
 

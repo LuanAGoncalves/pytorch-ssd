@@ -13,7 +13,7 @@ import functools
 from urllib import request
 
 
-s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
 
 
 def download(bucket, root, retry, counter, lock, path):
@@ -32,7 +32,7 @@ def download(bucket, root, retry, counter, lock, path):
                     logging.warning(f"Downloaded {counter.value} images.")
             return
         except botocore.exceptions.ClientError as e:
-            if e.response['Error']['Code'] == "404":
+            if e.response["Error"]["Code"] == "404":
                 logging.warning(f"The file s3://{bucket}/{src} does not exist.")
                 return
             i += 1
@@ -44,7 +44,7 @@ def download(bucket, root, retry, counter, lock, path):
 def batch_download(bucket, file_paths, root, num_workers=10, retry=10):
     with Pool(num_workers) as p:
         m = Manager()
-        counter = m.Value('i', 0)
+        counter = m.Value("i", 0)
         lock = m.Lock()
         download_ = functools.partial(download, bucket, root, retry, counter, lock)
         p.map(download_, file_paths)
@@ -65,29 +65,47 @@ def log_counts(values):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Dowload open image dataset by class.')
+    parser = argparse.ArgumentParser(description="Dowload open image dataset by class.")
 
-    parser.add_argument("--root", type=str,
-                        help='The root directory that you want to store the open image data.')
-    parser.add_argument("include_depiction", action="store_true",
-                        help="Do you want to include drawings or depictions?")
-    parser.add_argument("--class_names", type=str,
-                        help="the classes you want to download.")
-    parser.add_argument("--num_workers", type=int, default=10,
-                        help="the classes you want to download.")
-    parser.add_argument("--retry", type=int, default=10,
-                        help="retry times when downloading.")
-    parser.add_argument("--filter_file", type=str, default="",
-                        help="This file specifies the image ids you want to exclude.")
-    parser.add_argument('--remove_overlapped', action='store_true',
-                        help="Remove single boxes covered by group boxes.")
+    parser.add_argument(
+        "--root",
+        type=str,
+        help="The root directory that you want to store the open image data.",
+    )
+    parser.add_argument(
+        "include_depiction",
+        action="store_true",
+        help="Do you want to include drawings or depictions?",
+    )
+    parser.add_argument(
+        "--class_names", type=str, help="the classes you want to download."
+    )
+    parser.add_argument(
+        "--num_workers", type=int, default=10, help="the classes you want to download."
+    )
+    parser.add_argument(
+        "--retry", type=int, default=10, help="retry times when downloading."
+    )
+    parser.add_argument(
+        "--filter_file",
+        type=str,
+        default="",
+        help="This file specifies the image ids you want to exclude.",
+    )
+    parser.add_argument(
+        "--remove_overlapped",
+        action="store_true",
+        help="Remove single boxes covered by group boxes.",
+    )
     return parser.parse_args()
 
 
-if __name__ == '__main__':
-    logging.basicConfig(stream=sys.stdout, level=logging.WARNING,
-                        format='%(asctime)s - %(name)s - %(message)s')
+if __name__ == "__main__":
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=logging.WARNING,
+        format="%(asctime)s - %(name)s - %(message)s",
+    )
 
     args = parse_args()
     bucket = "open-images-dataset"
@@ -124,9 +142,10 @@ if __name__ == '__main__':
         logging.warning(f"Download {url}.")
         http_download(url, class_description_file)
 
-    class_descriptions = pd.read_csv(class_description_file,
-                                    names=["id", "ClassName"])
-    class_descriptions = class_descriptions[class_descriptions['ClassName'].isin(class_names)]
+    class_descriptions = pd.read_csv(class_description_file, names=["id", "ClassName"])
+    class_descriptions = class_descriptions[
+        class_descriptions["ClassName"].isin(class_names)
+    ]
 
     image_files = []
     for dataset_type in ["train", "validation", "test"]:
@@ -140,45 +159,59 @@ if __name__ == '__main__':
             http_download(url, annotation_file)
         logging.warning(f"Read annotation file {annotation_file}")
         annotations = pd.read_csv(annotation_file)
-        annotations = pd.merge(annotations, class_descriptions,
-                               left_on="LabelName", right_on="id",
-                               how="inner")
+        annotations = pd.merge(
+            annotations,
+            class_descriptions,
+            left_on="LabelName",
+            right_on="id",
+            how="inner",
+        )
         if not args.include_depiction:
-            annotations = annotations.loc[annotations['IsDepiction'] != 1, :]
+            annotations = annotations.loc[annotations["IsDepiction"] != 1, :]
 
         filtered = []
-        for class_name, group_filter, percentage in zip(class_names, group_filters, percentages):
-            sub = annotations.loc[annotations['ClassName'] == class_name, :]
-            excluded_images |= set(sub['ImageID'].sample(frac=1 - percentage))
+        for class_name, group_filter, percentage in zip(
+            class_names, group_filters, percentages
+        ):
+            sub = annotations.loc[annotations["ClassName"] == class_name, :]
+            excluded_images |= set(sub["ImageID"].sample(frac=1 - percentage))
 
-            if group_filter == '~group':
-                excluded_images |= set(sub.loc[sub['IsGroupOf'] == 1, 'ImageID'])
-            elif group_filter == 'group':
-                excluded_images |= set(sub.loc[sub['IsGroupOf'] == 0, 'ImageID'])
+            if group_filter == "~group":
+                excluded_images |= set(sub.loc[sub["IsGroupOf"] == 1, "ImageID"])
+            elif group_filter == "group":
+                excluded_images |= set(sub.loc[sub["IsGroupOf"] == 0, "ImageID"])
             filtered.append(sub)
 
         annotations = pd.concat(filtered)
-        annotations = annotations.loc[~annotations['ImageID'].isin(excluded_images), :]
-
+        annotations = annotations.loc[~annotations["ImageID"].isin(excluded_images), :]
 
         if args.remove_overlapped:
-            images_with_group = annotations.loc[annotations['IsGroupOf'] == 1, 'ImageID']
-            annotations = annotations.loc[~(annotations['ImageID'].isin(set(images_with_group)) & (annotations['IsGroupOf'] == 0)), :]
+            images_with_group = annotations.loc[
+                annotations["IsGroupOf"] == 1, "ImageID"
+            ]
+            annotations = annotations.loc[
+                ~(
+                    annotations["ImageID"].isin(set(images_with_group))
+                    & (annotations["IsGroupOf"] == 0)
+                ),
+                :,
+            ]
         annotations = annotations.sample(frac=1.0)
 
         logging.warning(f"{dataset_type} bounding boxes size: {annotations.shape[0]}")
         logging.warning("Approximate Image Stats: ")
         log_counts(annotations.drop_duplicates(["ImageID", "ClassName"])["ClassName"])
         logging.warning("Label distribution: ")
-        log_counts(annotations['ClassName'])
+        log_counts(annotations["ClassName"])
 
         logging.warning(f"Shuffle dataset.")
-
 
         sub_annotation_file = f"{args.root}/sub-{dataset_type}-annotations-bbox.csv"
         logging.warning(f"Save {dataset_type} data to {sub_annotation_file}.")
         annotations.to_csv(sub_annotation_file, index=False)
-        image_files.extend(f"{dataset_type}/{id}.jpg" for id in set(annotations['ImageID']))
+        image_files.extend(
+            f"{dataset_type}/{id}.jpg" for id in set(annotations["ImageID"])
+        )
     logging.warning(f"Start downloading {len(image_files)} images.")
     batch_download(bucket, image_files, args.root, args.num_workers, args.retry)
     logging.warning("Task Done.")

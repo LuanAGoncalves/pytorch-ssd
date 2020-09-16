@@ -13,7 +13,7 @@ import time
 print("# Preparing the server model.")
 
 model_path = "./models/ufpark-model.pth"
-split = 0   # Split point int the first maxpooling layer.
+split = 0  # Split point int the first maxpooling layer.
 label_path = "./models/ufpark-model-labels.txt"
 times = []
 
@@ -23,26 +23,24 @@ print("# Creating ssd model.")
 model = create_vgg_ssd(len(class_names), is_test=True)
 
 model.load(model_path)
-_, model2 = create_vgg_ssd_new(
-    len(class_names), model, split=split, is_test=True
-)
+_, model2 = create_vgg_ssd_new(len(class_names), model, split=split, is_test=True)
 
 predictor_m2 = PredictorM2(
-        model2,
-        nms_method=None,
-        iou_threshold=config.iou_threshold,
-        candidate_size=200,
-        device=None,
-    )
+    model2,
+    nms_method=None,
+    iou_threshold=config.iou_threshold,
+    candidate_size=200,
+    device=None,
+)
 print("# Done!")
 
-HOST = '0.0.0.0'
+HOST = "0.0.0.0"
 PORT = 2345
 
 # If server and client run in same local directory,
 # need a separate place to store the uploads.
 try:
-    os.mkdir('uploads')
+    os.mkdir("uploads")
 except FileExistsError:
     pass
 
@@ -65,18 +63,19 @@ while True:
         file_name = connbuf.get_utf8()
         if not file_name:
             break
-        file_name = os.path.join('uploads',file_name)
-        print('file name: ', file_name)
+        file_name = os.path.join("uploads", file_name)
+        print("file name: ", file_name)
 
         file_size = int(connbuf.get_utf8())
-        print('file size: ', file_size )
+        print("file size: ", file_size)
 
-        with open(file_name, 'wb') as f:
+        with open(file_name, "wb") as f:
             remaining = file_size
             while remaining:
                 chunk_size = 4096 if remaining >= 4096 else remaining
                 chunk = connbuf.get_bytes(chunk_size)
-                if not chunk: break
+                if not chunk:
+                    break
                 f.write(chunk)
                 remaining -= len(chunk)
             # if remaining:
@@ -88,9 +87,9 @@ while True:
         input_batch = torch.tensor(input_batch).cuda()
         boxes, labels, probs = predictor_m2.predict(input_batch, height, width, 30, 0.4)
         times.append(time.time())
-    print('Connection closed.')
+    print("Connection closed.")
     conn.close()
     break
 
-output = [times[i] - times[i-1] for i in range(1,len(times))]
+output = [times[i] - times[i - 1] for i in range(1, len(times))]
 print(output)

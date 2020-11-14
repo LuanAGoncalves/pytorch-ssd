@@ -54,7 +54,7 @@ if __name__ == "__main__":
             output = output.cpu().numpy()
 
             # ret_code, jpg_buffer = cv2.imencode(".jpg", output, [int(cv2.IMWRITE_JPEG_QUALITY), args["jpeg_quality"]])
-            sender.send_image(rpiName, jpg_buffer[0])
+            sender.send_image(rpiName, output)
         else:
             break
 

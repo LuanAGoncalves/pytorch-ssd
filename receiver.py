@@ -15,8 +15,6 @@ from imutils import build_montages
 from datetime import datetime
 import numpy as np
 import imagezmq
-import imutils
-import torch
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -24,14 +22,8 @@ if __name__ == "__main__":
         help="path to the trained model", type=str, default="./models/ufpark-model.pth")
     ap.add_argument("-l", "--label-path", required=False,
         help="SSD labels", type=str, default="./models/ufpark-model-labels.txt")
-    ap.add_argument("-s", "--split", required=False,
+    ap.add_argument("-s", "--split-points", required=False,
         help="split points on SSD: 0, 1, 2, 3 or 4", type=str, default=0)
-    ap.add_argument("-m", "--model-path", required=False,
-        help="path to the trained model", type=str, default="./models/ufpark-model.pth")
-    ap.add_argument("-l", "--label-path", required=False,
-        help="SSD labels", type=str, default="./models/ufpark-model-labels.txt")
-    ap.add_argument("-p", "--split-point", required=False,
-        help="split points on SSD: 0, 1, 2, 3 or 4", type=int, default=0)
     args = vars(ap.parse_args())
 
 imageHub = imagezmq.ImageHub()

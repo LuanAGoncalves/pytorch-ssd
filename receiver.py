@@ -22,7 +22,7 @@ if __name__ == "__main__":
         help="path to the trained model", type=str, default="./models/ufpark-model.pth")
     ap.add_argument("-l", "--label-path", required=False,
         help="SSD labels", type=str, default="./models/ufpark-model-labels.txt")
-    ap.add_argument("-s", "--split-points", required=False,
+    ap.add_argument("-s", "--split-point", required=False,
         help="split points on SSD: 0, 1, 2, 3 or 4", type=str, default=0)
     args = vars(ap.parse_args())
 
@@ -64,8 +64,9 @@ times = []
 
 while True:
     (rpiName, jpg_buffer) = imageHub.recv_image()
-    image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype='uint8'), -1)
-    input_batch = torch.tensor(image).cuda()
+    # image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype=float), -1)
+    # print(np.array(jpg_buffer.shape))
+    input_batch = torch.tensor(jpg_buffer).cuda()
     boxes, labels, probs = predictor_m2.predict(input_batch, 150, 150, 30, 0.4)
     imageHub.send_reply(b'OK')
     times.append(time.time())

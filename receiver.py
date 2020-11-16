@@ -71,7 +71,10 @@ while True:
     # image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype=float), -1)
     # print(np.array(jpg_buffer.shape))
     input_batch = torch.tensor(jpg_buffer).cuda()
-    boxes, labels, probs = predictor.predict(input_batch, 150, 150, 30, 0.4)
+    if args["split_point"] != 0:
+        boxes, labels, probs = predictor.predict(input_batch, 150, 150, 30, 0.4)
+    else:
+        boxes, labels, probs = predictor.predict(image, 30, 0.4)
     imageHub.send_reply(b'OK')
     times.append(time.time())
     

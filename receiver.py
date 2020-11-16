@@ -23,7 +23,7 @@ if __name__ == "__main__":
     ap.add_argument("-l", "--label-path", required=False,
         help="SSD labels", type=str, default="./models/ufpark-model-labels.txt")
     ap.add_argument("-s", "--split-point", required=False,
-        help="split points on SSD: 0, 1, 2 or 3 (0 means the whole network in receiver)", type=str, default=0)
+        help="split points on SSD: 0, 1, 2 or 3 (0 means the whole network in receiver)", type=int, default=0)
     args = vars(ap.parse_args())
 
 imageHub = imagezmq.ImageHub()
@@ -52,8 +52,7 @@ if args["split_point"] != 0:
         device=None,
     )
 else:
-    model2 = create_vgg_ssd_predictor(net, candidate_size=200)
-    predictor = create_vgg_ssd_predictor(model2, candidate_size=200)
+    predictor = create_vgg_ssd_predictor(model, candidate_size=200)
 print("# Done!")
 
 # If server and client run in same local directory,
@@ -68,11 +67,10 @@ times = []
 
 while True:
     (rpiName, jpg_buffer) = imageHub.recv_image()
-    # image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype=float), -1)
-    # print(np.array(jpg_buffer.shape))
-    input_batch = torch.tensor(jpg_buffer).cuda()
+    image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype="uint8"), -1)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     if args["split_point"] != 0:
-        boxes, labels, probs = predictor.predict(input_batch, 150, 150, 30, 0.4)
+        boxes, labels, probs = predictor.predict(image, 150, 150, 30, 0.4)
     else:
         boxes, labels, probs = predictor.predict(image, 30, 0.4)
     imageHub.send_reply(b'OK')

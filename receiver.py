@@ -23,7 +23,7 @@ if __name__ == "__main__":
     ap.add_argument("-l", "--label-path", required=False,
         help="SSD labels", type=str, default="./models/ufpark-model-labels.txt")
     ap.add_argument("-s", "--split-point", required=False,
-        help="split points on SSD: 0, 1, 2, 3 or 4", type=str, default=0)
+        help="split points on SSD: 0, 1, 2 or 3 (0 means the whole network in receiver)", type=str, default=0)
     args = vars(ap.parse_args())
 
 imageHub = imagezmq.ImageHub()
@@ -41,15 +41,19 @@ print("# Creating ssd model.")
 model = create_vgg_ssd(len(class_names), is_test=True)
 
 model.load(args["model_path"])
-_, model2 = create_vgg_ssd_new(len(class_names), model, split=args["split_point"], is_test=True)
+if args["split_point"] != 0:
+    _, model2 = create_vgg_ssd_new(len(class_names), model, split=args["split_point"], is_test=True)
 
-predictor_m2 = PredictorM2(
-    model2,
-    nms_method=None,
-    iou_threshold=config.iou_threshold,
-    candidate_size=200,
-    device=None,
-)
+    predictor = PredictorM2(
+        model2,
+        nms_method=None,
+        iou_threshold=config.iou_threshold,
+        candidate_size=200,
+        device=None,
+    )
+else:
+    model2 = create_vgg_ssd_predictor(net, candidate_size=200)
+    predictor = create_vgg_ssd_predictor(model2, candidate_size=200)
 print("# Done!")
 
 # If server and client run in same local directory,
@@ -67,63 +71,9 @@ while True:
     # image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype=float), -1)
     # print(np.array(jpg_buffer.shape))
     input_batch = torch.tensor(jpg_buffer).cuda()
-    boxes, labels, probs = predictor_m2.predict(input_batch, 150, 150, 30, 0.4)
+    boxes, labels, probs = predictor.predict(input_batch, 150, 150, 30, 0.4)
     imageHub.send_reply(b'OK')
     times.append(time.time())
     
     if len(times) > 1:
-        print(1./(times[-1] - times[-2]))
-
-
-
-########################################################################################
-
-# s = socket.socket()
-# s.bind((HOST, PORT))
-# s.listen(10)
-# print("Waiting for a connection.....")
-
-# while True:
-#     conn, addr = s.accept()
-#     print("Got a connection from ", addr)
-#     connbuf = buffer.Buffer(conn)
-
-#     while True:
-#         # hash_type = connbuf.get_utf8()
-#         # if not hash_type:
-#         #     break
-#         # print('hash type: ', hash_type)
-
-#         file_name = connbuf.get_utf8()
-#         if not file_name:
-#             break
-#         file_name = os.path.join("uploads", file_name)
-#         print("file name: ", file_name)
-
-#         file_size = int(connbuf.get_utf8())
-#         print("file size: ", file_size)
-
-#         with open(file_name, "wb") as f:
-#             remaining = file_size
-#             while remaining:
-#                 chunk_size = 4096 if remaining >= 4096 else remaining
-#                 chunk = connbuf.get_bytes(chunk_size)
-#                 if not chunk:
-#                     break
-#                 f.write(chunk)
-#                 remaining -= len(chunk)
-#             # if remaining:
-#             #     print('File incomplete.  Missing',remaining,'bytes.')
-#             # else:
-#             #     print('File received successfully.')
-#         with open(file_name) as json_file:
-#             input_batch, height, width = json.load(json_file).values()
-#             input_batch = torch.tensor(input_batch).cuda()
-#             boxes, labels, probs = predictor_m2.predict(input_batch, height, width, 30, 0.4)
-#             times.append(time.time())
-#     print("Connection closed.")
-#     conn.close()
-#     break
-
-# output = [times[i] - times[i - 1] for i in range(1, len(times))]
-# print(output)
+        print("FPS = {}".format(1./(times[-1] - times[-2])))

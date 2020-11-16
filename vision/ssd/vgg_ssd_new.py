@@ -33,9 +33,9 @@ def create_vgg_ssd_new(num_classes, trained_model, split=None, is_test=False):
         )
     else:
         maxpooling_layers = {
-            0: 5,
-            1: 10,
-            2: 17,
+            1: 5,
+            2: 10,
+            3: 17,
         }  # indexes for maxpooling layers of the base net.
         base = trained_model.base_net[:23]
         model1 = torch.nn.Sequential(*base[: maxpooling_layers[int(split)]])

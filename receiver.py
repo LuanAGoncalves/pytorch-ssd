@@ -66,12 +66,14 @@ except FileExistsError:
 times = []
 
 while True:
-    (rpiName, jpg_buffer) = imageHub.recv_image()
-    image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype="uint8"), -1)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     if args["split_point"] != 0:
-        boxes, labels, probs = predictor.predict(image, 150, 150, 30, 0.4)
+        (rpiName, jpg_buffer) = imageHub.recv_image()
+        jpg_buffer = torch.tensor(jpg_buffer).cuda()
+        boxes, labels, probs = predictor.predict(jpg_buffer, 150, 150, 30, 0.4)
     else:
+        (rpiName, jpg_buffer) = imageHub.recv_image()
+        image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype="uint8"), -1)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         boxes, labels, probs = predictor.predict(image, 30, 0.4)
     imageHub.send_reply(b'OK')
     times.append(time.time())

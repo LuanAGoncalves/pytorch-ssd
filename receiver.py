@@ -70,8 +70,8 @@ times = []
 while True:
     if args["split_point"] != 0:
         (rpiName, jpg_buffer) = imageHub.recv_image()
-        image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype=np.float32), -1)
-        jpg_buffer = torch.tensor(jpg_buffer).cuda()
+        image = cv2.imdecode(np.frombuffer(jpg_buffer, dtype="uint8"), cv2.IMREAD_UNCHANGED)
+        jpg_buffer = torch.tensor(image, dtype=torch.float32).cuda()
         jpg_buffer = jpg_buffer.view(*shapes[args["split_point"]]).permute(2,0,1).unsqueeze(0)
         boxes, labels, probs = predictor.predict(jpg_buffer, 150, 150, 30, 0.4)
     else:

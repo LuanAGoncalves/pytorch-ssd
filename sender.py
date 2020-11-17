@@ -59,7 +59,7 @@ if __name__ == "__main__":
                 output = predictor.predict(frame)
                 output = output.view(*shapes[args["split_point"]])
                 output = output.cpu().numpy()
-                # ret_code, jpg_buffer = cv2.imencode(".jpg", output, [int(cv2.IMWRITE_JPEG_QUALITY), args["jpeg_quality"]])
+                ret_code, output = cv2.imencode(".jpg", output, [int(cv2.IMWRITE_JPEG_QUALITY), args["jpeg_quality"]])
                 sender.send_image(rpiName, output)
             else:
                 ret_code, jpg_buffer = cv2.imencode(".jpg", cv2.resize(frame, (300,300), interpolation = cv2.INTER_AREA), [int(cv2.IMWRITE_JPEG_QUALITY), args["jpeg_quality"]])

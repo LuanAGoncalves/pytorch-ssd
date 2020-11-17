@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     class_names = [name.strip() for name in open(args["label_path"]).readlines()]
 
-    shapes = {1:(4000,800,3), 2:(400,600,3), 3:(608,608)}
+    shapes = {1:(600,800,3), 2:(400,600,3), 3:(608,608)}
 
     print("# Creating ssd model.")
     model = create_vgg_ssd(len(class_names), is_test=True)

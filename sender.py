@@ -57,7 +57,7 @@ if __name__ == "__main__":
         if ret == True:
             if args["split_point"] != 0:
                 output = predictor.predict(frame)
-                output = output.view(shapes[*args["split_point"]])
+                output = output.view(*shapes[args["split_point"]])
                 output = output.cpu().numpy()
                 # ret_code, jpg_buffer = cv2.imencode(".jpg", output, [int(cv2.IMWRITE_JPEG_QUALITY), args["jpeg_quality"]])
                 sender.send_image(rpiName, output)

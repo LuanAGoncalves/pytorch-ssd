@@ -31,6 +31,8 @@ if __name__ == "__main__":
 
     class_names = [name.strip() for name in open(args["label_path"]).readlines()]
 
+    shapes = {1:(600,600,4), 2:(300,300,4), 3:(304,304,4)}
+
     print("# Creating ssd model.")
     model = create_vgg_ssd(len(class_names), is_test=True)
     model.load(args["model_path"])
@@ -38,7 +40,6 @@ if __name__ == "__main__":
     if args["split_point"] != 0:
         model.load(args["model_path"])
         model1, _ = create_vgg_ssd_new(len(class_names), model, split=args["split_point"], is_test=True)
-
         predictor = PredictorM1(model1, config.image_size, config.image_mean, device=None,)
     else:
         pass
@@ -56,8 +57,8 @@ if __name__ == "__main__":
         if ret == True:
             if args["split_point"] != 0:
                 output = predictor.predict(frame)
+                output = output.view(shapes[*args["split_point"]])
                 output = output.cpu().numpy()
-
                 # ret_code, jpg_buffer = cv2.imencode(".jpg", output, [int(cv2.IMWRITE_JPEG_QUALITY), args["jpeg_quality"]])
                 sender.send_image(rpiName, output)
             else:

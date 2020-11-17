@@ -26,6 +26,8 @@ if __name__ == "__main__":
         help="split points on SSD: 0, 1, 2 or 3 (0 means the whole network in receiver)", type=int, default=0)
     args = vars(ap.parse_args())
 
+shapes = {1:(150,150,64), 2:(75,75,128), 3:(38,38,256)}
+
 imageHub = imagezmq.ImageHub()
 
 lastActive = {}
@@ -69,6 +71,7 @@ while True:
     if args["split_point"] != 0:
         (rpiName, jpg_buffer) = imageHub.recv_image()
         jpg_buffer = torch.tensor(jpg_buffer).cuda()
+        jpg_buffer = jpg_buffer.view(*args["split_point"]).permute(2,0,1).unsqueeze(0)
         boxes, labels, probs = predictor.predict(jpg_buffer, 150, 150, 30, 0.4)
     else:
         (rpiName, jpg_buffer) = imageHub.recv_image()
